@@ -16,7 +16,7 @@ public class MazeGenerator : MonoBehaviour
 
     private MazeCell[,] _mazeGrid;
 
-    IEnumerator Start() 
+    void Start() 
     {
         _mazeGrid = new MazeCell[_mazeWidth, _mazeDepth];
 
@@ -28,23 +28,26 @@ public class MazeGenerator : MonoBehaviour
             }
         }
 
-        yield return GenerateMaze(null, _mazeGrid[0, 0]);
+        GenerateMaze(null, _mazeGrid[0, 0]);
 
     }
 
-    private IEnumerator GenerateMaze(MazeCell previousCell, MazeCell currentCell)
+    private void GenerateMaze(MazeCell previousCell, MazeCell currentCell)
     {
         currentCell.Visit();
         ClearWalls(previousCell, currentCell);
 
-        yield return new WaitForSeconds(0.05f);
-
-        var nextCell = GetNextUnvisitedCell(currentCell);
-
-        if (nextCell != null)
+        MazeCell nextCell;
+        do
         {
-            yield return GenerateMaze(currentCell, nextCell);
-        }
+            nextCell = GetNextUnvisitedCell(currentCell);
+
+            if (nextCell != null)
+            {
+                GenerateMaze(currentCell, nextCell);
+            }
+
+        } while (nextCell != null);
     }
 
     private MazeCell GetNextUnvisitedCell(MazeCell currentCell)
