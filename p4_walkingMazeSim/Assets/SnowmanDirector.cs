@@ -1,16 +1,9 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SnowmanDirector : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+   public static SnowmanDirector Instance { get; private set; }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    [Header()]
 }
