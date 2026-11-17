@@ -25,6 +25,18 @@ public class SnowmanController : MonoBehaviour
         _hasCaught = false;
     }
 
+    void Start()
+    {
+        if (_target == null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+                Init(player.transform);
+            else
+                Debug.LogWarning("SnowmanController: Didn't found any onject with Player tag");
+        }
+    }
+
     public void SetWatched(bool watched) => _isWatched = watched;
 
     void Update()
@@ -61,7 +73,8 @@ public class SnowmanController : MonoBehaviour
         Vector3 step = toTarget.normalized * (moveSpeed * Time.deltaTime);
         step.y = 0f;
         transform.position += step;
-        transform.position = new Vector3(transform.position.x, groundOffset, transform.position.z);
+        transform.position = new Vector3(transform.position.x, transform.position.y + groundOffset, transform.position.z);
+
     }
 
     void CatchPlayer()
