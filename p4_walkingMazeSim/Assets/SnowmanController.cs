@@ -29,7 +29,7 @@ public class SnowmanController : MonoBehaviour
 
     void Update()
     {
-        if (!_isActive || _target == null _hasCaught) return;
+        if (!_isActive || _target == null || _hasCaught) return;
 
         Vector3 toTarget = _target.position - transform.position;
         toTarget.y = 0f;

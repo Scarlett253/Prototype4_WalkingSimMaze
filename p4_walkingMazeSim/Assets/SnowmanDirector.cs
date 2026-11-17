@@ -70,7 +70,7 @@ public class SnowmanDirector : MonoBehaviour
 
     void UpdateSpawnTimer()
     {
-        _timer -= Tieme.deltaTime;
+        _timer -= Time.deltaTime;
         if (_timer > 0f) return;
 
         _timer = spawnInterval;
