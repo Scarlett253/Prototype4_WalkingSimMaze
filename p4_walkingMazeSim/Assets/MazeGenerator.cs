@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Unity.AI.Navigation;
 
 public class MazeGenerator : MonoBehaviour
 {
@@ -29,6 +30,7 @@ public class MazeGenerator : MonoBehaviour
         }
 
         GenerateMaze(null, _mazeGrid[0, 0]);
+        GetComponent<NavMeshSurface>().BuildNavMesh();
 
     }
 
@@ -138,12 +140,4 @@ public class MazeGenerator : MonoBehaviour
         }
     }
 
-
-   
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

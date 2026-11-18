@@ -1,40 +1,41 @@
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class SnowmanController : MonoBehaviour
 {
     [SerializeField] float moveSpeed = 1.6f;
     [SerializeField] float rotationSpeed = 6f;
     [SerializeField] float stopDistance = 1.2f;
-
     [SerializeField] float catchDistance = 1.1f;
 
-    [SerializeField] float groundOffset = 0f;
-
     Transform _target;
+    NavMeshAgent _agent;
     bool _isWatched;
     bool _isActive;
     bool _hasCaught;
 
     public bool IsActive => _isActive;
 
+    void Awake()
+    {
+        _agent = GetComponent<NavMeshAgent>();
+        if (_agent != null)
+        {
+            _agent.speed = moveSpeed;
+            _agent.stoppingDistance = stopDistance;
+            _agent.updateRotation = false;
+            _agent.autoBraking = true;
+        }
+    }
+
     public void Init(Transform player)
     {
         _target = player;
         _isActive = true;
         _hasCaught = false;
-    }
 
-    void Start()
-    {
-        if (_target == null)
-        {
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null)
-                Init(player.transform);
-            else
-                Debug.LogWarning("SnowmanController: Didn't found any onject with Player tag");
-        }
+        if (_agent != null && _agent.isOnNavMesh)
+            _agent.isStopped = false;
     }
 
     public void SetWatched(bool watched) => _isWatched = watched;
@@ -46,40 +47,33 @@ public class SnowmanController : MonoBehaviour
         Vector3 toTarget = _target.position - transform.position;
         toTarget.y = 0f;
 
-        if (toTarget.magnitude <=catchDistance)
+        if (toTarget.magnitude <= catchDistance)
         {
             CatchPlayer();
             return;
         }
 
-        FaceTarget(toTarget);
+        if (_agent == null || !_agent.isOnNavMesh) return;
+
+        _agent.isStopped = _isWatched;
 
         if (!_isWatched)
-            MoveTowards(toTarget);
+            _agent.SetDestination(_target.position);
+
+        FaceTarget(toTarget);
     }
 
     void FaceTarget(Vector3 toTarget)
     {
         if (toTarget.sqrMagnitude < 0.001f) return;
-
         Quaternion look = Quaternion.LookRotation(toTarget.normalized, Vector3.up);
         transform.rotation = Quaternion.Slerp(transform.rotation, look, rotationSpeed * Time.deltaTime);
-    }
-
-    void MoveTowards(Vector3 toTarget)
-    {
-        if (toTarget.magnitude <= stopDistance) return;
-
-        Vector3 step = toTarget.normalized * (moveSpeed * Time.deltaTime);
-        step.y = 0f;
-        transform.position += step;
-        transform.position = new Vector3(transform.position.x, transform.position.y + groundOffset, transform.position.z);
-
     }
 
     void CatchPlayer()
     {
         _hasCaught = true;
-        SnowmanDirector.Instance?.OnPlayerCaught();
+        if (_agent != null) _agent.isStopped = true;
+        SnowmanDirector.Instance.OnPlayerCaught();
     }
 }

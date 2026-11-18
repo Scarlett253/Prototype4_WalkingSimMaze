@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class SnowmanDirector : MonoBehaviour
 {
-   public static SnowmanDirector Instance { get; private set; }
+    public static SnowmanDirector Instance { get; private set; }
 
     [Header("References")]
     [SerializeField] Transform player;
@@ -64,8 +65,16 @@ public class SnowmanDirector : MonoBehaviour
             if (snowman == null) continue;
 
             Bounds bounds = new Bounds(snowman.transform.position + Vector3.up, Vector3.one * 1.6f);
-            snowman.SetWatched(GeometryUtility.TestPlanesAABB(_frustumPlanes, bounds));
+            bool inView = GeometryUtility.TestPlanesAABB(_frustumPlanes, bounds);
+            snowman.SetWatched(inView && HasLineOfSight(snowman));
         }
+    }
+
+    bool HasLineOfSight(SnowmanController snowman)
+    {
+        Vector3 from = playerCamera.transform.position;
+        Vector3 to = snowman.transform.position + Vector3.up * 1f;
+        return !Physics.Linecast(from, to, wallMask, QueryTriggerInteraction.Ignore);
     }
 
     void UpdateSpawnTimer()
@@ -116,8 +125,12 @@ public class SnowmanDirector : MonoBehaviour
             if (IsInsideFrustum(candidate)) continue;
             if (IsBlocked(candidate)) continue;
 
-            snowman.transform.position = candidate;
-            if (logSpawns) Debug.Log($"Snowman puts a {candidate}");
+            // Solo colocar sobre suelo navegable
+            if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+                continue;
+
+            snowman.transform.position = hit.position;
+            if (logSpawns) Debug.Log($"Snowman puts at {hit.position}");
             return;
         }
     }
